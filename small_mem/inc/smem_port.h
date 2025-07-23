@@ -12,10 +12,14 @@ extern "C" {
     #define _ASSERT assert
 #endif
 
+#ifndef LOG_TAG
+    #define LOG_TAG " "
+#endif
+
 #ifndef LOG_I
-    #define LOG_I(...) do { printf("[I] "); printf(__VA_ARGS__); } while (0)
-    #define LOG_D(...) do { printf("[D] "); printf(__VA_ARGS__); } while (0)
-    #define LOG_E(...) do { printf("[E] "); printf(__VA_ARGS__); } while (0)
+    #define LOG_I(...) do { printf("[I] "LOG_TAG" "); printf(__VA_ARGS__); } while (0)
+    #define LOG_D(...) do { printf("[D] "LOG_TAG" "); printf(__VA_ARGS__); } while (0)
+    #define LOG_E(...) do { printf("[E] "LOG_TAG" "); printf(__VA_ARGS__); } while (0)
 #endif
 
 #ifdef __cplusplus

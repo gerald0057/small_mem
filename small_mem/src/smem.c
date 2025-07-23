@@ -46,6 +46,7 @@
  *         Simon Goldschmidt
  *
  */
+#define LOG_TAG "[SMEM]"
 
 #include <string.h>
 #include "smem.h"
