@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "inc/smem.h"
+#include <small_mem/inc/smem.h>
 
 void print_memory(const void *mem, size_t length)
 {
@@ -58,17 +58,20 @@ int main(void)
     smem_t heap = 0;
     heap = smem_init(heap_addr, heap_size);
     print_memory(heap_addr, heap_size);
-    
+
     uint8_t *bufa = (uint8_t *)smem_alloc(heap, 20);
+    assert(bufa);
     memset(bufa, 0x0a, 20);
     print_memory(heap_addr, heap_size);
     
     uint8_t *bufb = (uint8_t *)smem_alloc(heap, 24);
+    assert(bufb);
     memset(bufb, 0x0b, 24);
     print_memory(heap_addr, heap_size);
     
     smem_free(bufa);
     uint8_t *bufc = (uint8_t *)smem_alloc(heap, 18);
+    assert(bufc);
     memset(bufc, 0x0c, 18);
     print_memory(heap_addr, heap_size);
 
