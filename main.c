@@ -48,7 +48,7 @@ int main(void)
 {
     printf("Hello small mem\r\n");
 
-    int heap_size = 128;
+    int heap_size = 256;
     uint8_t *heap_addr = malloc(heap_size);
     assert(heap_addr);
     memset(heap_addr, 0, heap_size);
@@ -56,7 +56,7 @@ int main(void)
     printf("Small mem init done\r\n");
 
     smem_t heap = 0;
-    heap = smem_init(heap, heap_size);
+    heap = smem_init(heap_addr, heap_size);
     print_memory(heap_addr, heap_size);
     
     uint8_t *bufa = (uint8_t *)smem_alloc(heap, 20);
@@ -64,12 +64,12 @@ int main(void)
     print_memory(heap_addr, heap_size);
     
     uint8_t *bufb = (uint8_t *)smem_alloc(heap, 24);
-    memset(bufa, 0x0b, 24);
+    memset(bufb, 0x0b, 24);
     print_memory(heap_addr, heap_size);
     
     smem_free(bufa);
     uint8_t *bufc = (uint8_t *)smem_alloc(heap, 18);
-    memset(bufa, 0x0c, 18);
+    memset(bufc, 0x0c, 18);
     print_memory(heap_addr, heap_size);
 
     (void)(bufa);

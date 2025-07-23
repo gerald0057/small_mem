@@ -18,7 +18,7 @@ install(TARGETS small_mem
     DESTINATION lib
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/inc DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/small_mem DESTINATION include)
 
 install(EXPORT small_memTargets
     FILE small_mem-config.cmake

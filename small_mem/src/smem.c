@@ -152,7 +152,7 @@ smem_t smem_init(void *begin_addr, size_t size)
     }
     else
     {
-        LOG_E("mem init, error begin address 0x%lx, and end address 0x%lx\n", (uintptr_t)begin_addr,
+        LOG_E("mem init, error begin address 0x%lx, and end address 0x%lx\r\n", (uintptr_t)begin_addr,
                 (uintptr_t)begin_addr + size);
 
         return NULL;
@@ -167,7 +167,7 @@ smem_t smem_init(void *begin_addr, size_t size)
     /* point to begin address of heap */
     small_mem->heap_ptr = (uint8_t *)begin_align;
 
-    LOG_D("mem init, heap begin address 0x%lx, size %ld", (uintptr_t)small_mem->heap_ptr, small_mem->mem_size_aligned);
+    LOG_D("mem init, heap begin address 0x%lx, size %ld\r\n", (uintptr_t)small_mem->heap_ptr, small_mem->mem_size_aligned);
 
     /* initialize the start of the heap */
     mem = (struct small_mem_item *)small_mem->heap_ptr;
@@ -223,7 +223,7 @@ void *smem_alloc(smem_t m, size_t size)
 
     if (size > small_mem->mem_size_aligned)
     {
-        LOG_D("no memory");
+        LOG_D("no memory\r\n");
         return NULL;
     }
 
@@ -296,7 +296,7 @@ void *smem_alloc(smem_t m, size_t size)
             _ASSERT((uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM) % ALIGN_SIZE == 0);
             _ASSERT((((uintptr_t)mem) & (ALIGN_SIZE - 1)) == 0);
 
-            LOG_I("allocate memory at 0x%lx, size: %ld", (uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM),
+            LOG_I("allocate memory at 0x%lx, size: %ld\r\n", (uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM),
                   (uintptr_t)(mem->next - ((uint8_t *)mem - small_mem->heap_ptr)));
 
             /* return the memory data except mem struct */
@@ -333,8 +333,7 @@ void *smem_realloc(smem_t m, void *rmem, size_t newsize)
     newsize = _ALIGN(newsize, ALIGN_SIZE);
     if (newsize > small_mem->mem_size_aligned)
     {
-        LOG_D("realloc: out of memory");
-
+        LOG_D("realloc: out of memory\r\n");
         return NULL;
     }
     else if (newsize == 0)
@@ -425,7 +424,7 @@ void smem_free(void *rmem)
     _ASSERT((uint8_t *)rmem >= (uint8_t *)small_mem->heap_ptr && (uint8_t *)rmem < (uint8_t *)small_mem->heap_end);
     _ASSERT(MEM_POOL(&small_mem->heap_ptr[mem->next]) == small_mem);
 
-    LOG_D("release memory 0x%lx, size: %ld", (uintptr_t)rmem,
+    LOG_D("release memory 0x%lx, size: %ld\r\n", (uintptr_t)rmem,
           (uintptr_t)(mem->next - ((uint8_t *)mem - small_mem->heap_ptr)));
 
     /* ... and is now unused. */
