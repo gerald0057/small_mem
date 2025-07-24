@@ -8,6 +8,23 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
+/**
+ * @def SMEM_ALIGN(size, align)
+ * Return the most contiguous size aligned at specified width. SMEM_ALIGN(13, 4)
+ * would return 16.
+ */
+#define SMEM_ALIGN(size, align)           (((size) + (align) - 1) & ~((align) - 1))
+
+/**
+ * @ingroup group_basic_definition
+ *
+ * @def SMEM_ALIGN_DOWN(size, align)
+ * Return the down number of aligned at specified width. SMEM_ALIGN_DOWN(13, 4)
+ * would return 12.
+ * @note align Must be an integer power of 2 or the result will be incorrect
+ */
+#define SMEM_ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
+
 /*
  * memory structure
  */

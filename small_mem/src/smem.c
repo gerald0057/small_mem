@@ -8,7 +8,7 @@
  * 2008-7-12      Bernard      the first version
  * 2010-06-09     Bernard      fix the end stub of heap
  *                             fix memory check in rt_realloc function
- * 2010-07-13     Bernard      fix _ALIGN issue found by kuronca
+ * 2010-07-13     Bernard      fix SMEM_ALIGN issue found by kuronca
  * 2010-10-14     Bernard      fix rt_realloc issue when realloc a NULL pointer.
  * 2017-07-14     armink       fix rt_realloc issue when new size is 0
  * 2018-10-02     Bernard      Add 64bit support
@@ -56,35 +56,16 @@
 
 #define MEM_MASK ((~(size_t)0) - 1)
 
-/**
- * @def _ALIGN(size, align)
- * Return the most contiguous size aligned at specified width. _ALIGN(13, 4)
- * would return 16.
- */
-#define _ALIGN(size, align)           (((size) + (align) - 1) & ~((align) - 1))
-
-/**
- * @ingroup group_basic_definition
- *
- * @def _ALIGN_DOWN(size, align)
- * Return the down number of aligned at specified width. _ALIGN_DOWN(13, 4)
- * would return 12.
- * @note align Must be an integer power of 2 or the result will be incorrect
- */
-#define _ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
-
-#define ALIGN_SIZE (4)
-
 #define MEM_USED(_mem) ((((uintptr_t)(_mem)) & MEM_MASK) | 0x1)
 #define MEM_FREED(_mem) ((((uintptr_t)(_mem)) & MEM_MASK) | 0x0)
 #define MEM_ISUSED(_mem) (((uintptr_t)(((struct small_mem_item *)(_mem))->pool_ptr)) & (~MEM_MASK))
 #define MEM_POOL(_mem) ((struct small_mem *)(((uintptr_t)(((struct small_mem_item *)(_mem))->pool_ptr)) & (MEM_MASK)))
 #define MEM_SIZE(_heap, _mem)                                                                                          \
     (((struct small_mem_item *)(_mem))->next - ((uintptr_t)(_mem) - (uintptr_t)((_heap)->heap_ptr)) -                  \
-     _ALIGN(sizeof(struct small_mem_item), ALIGN_SIZE))
+     SMEM_ALIGN(sizeof(struct small_mem_item), SMEM_ALIGN_SIZE))
 
-#define MIN_SIZE_ALIGNED _ALIGN(MIN_SIZE, ALIGN_SIZE)
-#define SIZEOF_STRUCT_MEM _ALIGN(sizeof(struct small_mem_item), ALIGN_SIZE)
+#define MIN_SIZE_ALIGNED SMEM_ALIGN(MIN_SIZE, SMEM_ALIGN_SIZE)
+#define SIZEOF_STRUCT_MEM SMEM_ALIGN(sizeof(struct small_mem_item), SMEM_ALIGN_SIZE)
 
 static void plug_holes(struct small_mem *m, struct small_mem_item *mem)
 {
@@ -140,10 +121,10 @@ smem_t smem_init(void *begin_addr, size_t size)
     struct small_mem *small_mem;
     uintptr_t staaddr, begin_align, end_align, mem_size;
 
-    small_mem = (struct small_mem *)_ALIGN((uintptr_t)begin_addr, ALIGN_SIZE);
+    small_mem = (struct small_mem *)SMEM_ALIGN((uintptr_t)begin_addr, SMEM_ALIGN_SIZE);
     staaddr = (uintptr_t)small_mem + sizeof(*small_mem);
-    begin_align = _ALIGN((uintptr_t)staaddr, ALIGN_SIZE);
-    end_align = _ALIGN_DOWN((uintptr_t)begin_addr + size, ALIGN_SIZE);
+    begin_align = SMEM_ALIGN((uintptr_t)staaddr, SMEM_ALIGN_SIZE);
+    end_align = SMEM_ALIGN_DOWN((uintptr_t)begin_addr + size, SMEM_ALIGN_SIZE);
 
     /* alignment addr */
     if ((end_align > (2 * SIZEOF_STRUCT_MEM)) && ((end_align - 2 * SIZEOF_STRUCT_MEM) >= staaddr))
@@ -216,7 +197,7 @@ void *smem_alloc(smem_t m, size_t size)
 
     small_mem = (struct small_mem *)m;
     /* alignment size */
-    size = _ALIGN(size, ALIGN_SIZE);
+    size = SMEM_ALIGN(size, SMEM_ALIGN_SIZE);
 
     /* every data block must be at least MIN_SIZE_ALIGNED long */
     if (size < MIN_SIZE_ALIGNED)
@@ -294,8 +275,8 @@ void *smem_alloc(smem_t m, size_t size)
                 _ASSERT(((small_mem->lfree == small_mem->heap_end) || (!MEM_ISUSED(small_mem->lfree))));
             }
             _ASSERT((uintptr_t)mem + SIZEOF_STRUCT_MEM + size <= (uintptr_t)small_mem->heap_end);
-            _ASSERT((uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM) % ALIGN_SIZE == 0);
-            _ASSERT((((uintptr_t)mem) & (ALIGN_SIZE - 1)) == 0);
+            _ASSERT((uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM) % SMEM_ALIGN_SIZE == 0);
+            _ASSERT((((uintptr_t)mem) & (SMEM_ALIGN_SIZE - 1)) == 0);
 
             LOG_I("allocate memory at 0x%lx, size: %ld\r\n", (uintptr_t)((uint8_t *)mem + SIZEOF_STRUCT_MEM),
                   (uintptr_t)(mem->next - ((uint8_t *)mem - small_mem->heap_ptr)));
@@ -331,7 +312,7 @@ void *smem_realloc(smem_t m, void *rmem, size_t newsize)
 
     small_mem = (struct small_mem *)m;
     /* alignment size */
-    newsize = _ALIGN(newsize, ALIGN_SIZE);
+    newsize = SMEM_ALIGN(newsize, SMEM_ALIGN_SIZE);
     if (newsize > small_mem->mem_size_aligned)
     {
         LOG_D("realloc: out of memory\r\n");
@@ -347,7 +328,7 @@ void *smem_realloc(smem_t m, void *rmem, size_t newsize)
     if (rmem == NULL)
         return smem_alloc((smem_t)(&small_mem->parent), newsize);
 
-    _ASSERT((((uintptr_t)rmem) & (ALIGN_SIZE - 1)) == 0);
+    _ASSERT((((uintptr_t)rmem) & (SMEM_ALIGN_SIZE - 1)) == 0);
     _ASSERT((uint8_t *)rmem >= (uint8_t *)small_mem->heap_ptr);
     _ASSERT((uint8_t *)rmem < (uint8_t *)small_mem->heap_end);
 
@@ -414,7 +395,7 @@ void smem_free(void *rmem)
     if (rmem == NULL)
         return;
 
-    _ASSERT((((uintptr_t)rmem) & (ALIGN_SIZE - 1)) == 0);
+    _ASSERT((((uintptr_t)rmem) & (SMEM_ALIGN_SIZE - 1)) == 0);
 
     /* Get the corresponding struct small_mem_item ... */
     mem = (struct small_mem_item *)((uint8_t *)rmem - SIZEOF_STRUCT_MEM);
